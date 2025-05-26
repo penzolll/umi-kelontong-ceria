@@ -49,6 +49,9 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
                   <DropdownMenuItem onClick={() => window.location.href = '/orders'}>
                     Riwayat Pesanan
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
+                    Admin Panel
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={onLogout} className="text-red-600">
                     <LogOut size={16} className="mr-2" />
@@ -107,6 +110,14 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
                 >
                   <User size={20} className="mr-2" />
                   Riwayat Pesanan
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => window.location.href = '/admin'}
+                  className="w-full justify-start"
+                >
+                  <User size={20} className="mr-2" />
+                  Admin Panel
                 </Button>
                 <Button
                   variant="ghost"
