@@ -24,13 +24,13 @@ export const useProducts = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('products' as any)
+        .from('products')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data as any) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

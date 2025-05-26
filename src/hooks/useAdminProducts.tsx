@@ -26,12 +26,12 @@ export const useAdminProducts = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('products' as any)
+        .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data as any) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -46,7 +46,7 @@ export const useAdminProducts = () => {
   const createProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error } = await supabase
-        .from('products' as any)
+        .from('products')
         .insert(productData as any)
         .select()
         .single();
@@ -62,7 +62,7 @@ export const useAdminProducts = () => {
   const updateProduct = async (id: string, productData: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       const { data, error } = await supabase
-        .from('products' as any)
+        .from('products')
         .update({ ...productData, updated_at: new Date().toISOString() } as any)
         .eq('id', id)
         .select()
@@ -79,7 +79,7 @@ export const useAdminProducts = () => {
   const deleteProduct = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('products' as any)
+        .from('products')
         .delete()
         .eq('id', id);
 

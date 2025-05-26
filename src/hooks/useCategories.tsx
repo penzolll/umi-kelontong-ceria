@@ -20,12 +20,12 @@ export const useCategories = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('categories' as any)
+        .from('categories')
         .select('*')
         .order('name');
 
       if (error) throw error;
-      setCategories(data || []);
+      setCategories((data as any) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -40,8 +40,8 @@ export const useCategories = () => {
   const createCategory = async (categoryData: { name: string; description?: string }) => {
     try {
       const { data, error } = await supabase
-        .from('categories' as any)
-        .insert(categoryData)
+        .from('categories')
+        .insert(categoryData as any)
         .select()
         .single();
 
@@ -56,8 +56,8 @@ export const useCategories = () => {
   const updateCategory = async (id: string, categoryData: { name?: string; description?: string; is_active?: boolean }) => {
     try {
       const { data, error } = await supabase
-        .from('categories' as any)
-        .update({ ...categoryData, updated_at: new Date().toISOString() })
+        .from('categories')
+        .update({ ...categoryData, updated_at: new Date().toISOString() } as any)
         .eq('id', id)
         .select()
         .single();
@@ -73,7 +73,7 @@ export const useCategories = () => {
   const deleteCategory = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('categories' as any)
+        .from('categories')
         .delete()
         .eq('id', id);
 

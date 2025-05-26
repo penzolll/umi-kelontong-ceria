@@ -40,7 +40,7 @@ export const useAdminOrders = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select(`
           *,
           order_items (
@@ -58,9 +58,9 @@ export const useAdminOrders = () => {
       
       // Fetch profile data separately for each order
       const ordersWithProfiles = await Promise.all(
-        (data || []).map(async (order: any) => {
+        ((data as any) || []).map(async (order: any) => {
           const { data: profileData } = await supabase
-            .from('profiles' as any)
+            .from('profiles')
             .select('full_name, username')
             .eq('id', order.user_id)
             .single();
@@ -72,7 +72,7 @@ export const useAdminOrders = () => {
         })
       );
 
-      setOrders(ordersWithProfiles);
+      setOrders(ordersWithProfiles as any);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -87,7 +87,7 @@ export const useAdminOrders = () => {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       const { data, error } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .update({ status, updated_at: new Date().toISOString() } as any)
         .eq('id', orderId)
         .select()
@@ -105,12 +105,12 @@ export const useAdminOrders = () => {
     try {
       // Get total orders
       const { count: totalOrders } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select('*', { count: 'exact', head: true });
 
       // Get total revenue
       const { data: revenueData } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select('total_amount')
         .eq('status', 'delivered');
 
@@ -118,14 +118,14 @@ export const useAdminOrders = () => {
 
       // Get pending orders
       const { count: pendingOrders } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
 
       // Get today's orders
       const today = new Date().toISOString().split('T')[0];
       const { count: todayOrders } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', `${today}T00:00:00`)
         .lt('created_at', `${today}T23:59:59`);
