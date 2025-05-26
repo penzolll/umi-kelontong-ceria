@@ -26,7 +26,7 @@ export const useAdminProducts = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('products')
+        .from('products' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -46,8 +46,8 @@ export const useAdminProducts = () => {
   const createProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .insert(productData)
+        .from('products' as any)
+        .insert(productData as any)
         .select()
         .single();
 
@@ -62,8 +62,8 @@ export const useAdminProducts = () => {
   const updateProduct = async (id: string, productData: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .update({ ...productData, updated_at: new Date().toISOString() })
+        .from('products' as any)
+        .update({ ...productData, updated_at: new Date().toISOString() } as any)
         .eq('id', id)
         .select()
         .single();
@@ -79,7 +79,7 @@ export const useAdminProducts = () => {
   const deleteProduct = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('products')
+        .from('products' as any)
         .delete()
         .eq('id', id);
 
