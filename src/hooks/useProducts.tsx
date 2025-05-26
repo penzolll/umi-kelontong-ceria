@@ -23,7 +23,7 @@ export const useProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('*')
         .eq('is_active', true)
