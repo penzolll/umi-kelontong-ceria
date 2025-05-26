@@ -50,7 +50,7 @@ export const useAdminOrders = () => {
               unit
             )
           ),
-          profiles!orders_user_id_fkey (
+          profiles (
             full_name,
             username
           )
