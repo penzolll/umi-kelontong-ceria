@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,16 +50,29 @@ export const useAdminOrders = () => {
               image_url,
               unit
             )
-          ),
-          profiles (
-            full_name,
-            username
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      
+      // Fetch profile data separately for each order
+      const ordersWithProfiles = await Promise.all(
+        (data || []).map(async (order) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('id', order.user_id)
+            .single();
+
+          return {
+            ...order,
+            profiles: profileData || null
+          };
+        })
+      );
+
+      setOrders(ordersWithProfiles);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

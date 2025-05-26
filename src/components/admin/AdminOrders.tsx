@@ -112,7 +112,7 @@ const AdminOrders = () => {
                     {order.order_number}
                   </TableCell>
                   <TableCell>
-                    {order.profiles?.full_name || order.profiles?.username || 'Customer'}
+                    {order.profiles?.full_name || order.profiles?.username || 'Unknown Customer'}
                   </TableCell>
                   <TableCell className="font-medium text-emerald-600">
                     {formatPrice(order.total_amount)}
