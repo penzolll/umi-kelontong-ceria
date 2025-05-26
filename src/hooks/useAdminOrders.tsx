@@ -25,10 +25,10 @@ interface Order {
   created_at: string;
   user_id: string;
   order_items: OrderItem[];
-  profiles?: {
+  profiles: {
     full_name: string | null;
     username: string | null;
-  };
+  } | null;
 }
 
 export const useAdminOrders = () => {
@@ -51,7 +51,7 @@ export const useAdminOrders = () => {
               unit
             )
           ),
-          profiles!orders_user_id_fkey (
+          profiles (
             full_name,
             username
           )
