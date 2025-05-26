@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,7 +50,7 @@ export const useAdminOrders = () => {
               unit
             )
           ),
-          profiles:user_id (
+          profiles!orders_user_id_fkey (
             full_name,
             username
           )
