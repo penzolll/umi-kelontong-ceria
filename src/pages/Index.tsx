@@ -1,14 +1,18 @@
 
 import React, { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useProducts } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import CategoryNav from '@/components/CategoryNav';
 import ProductCard from '@/components/ProductCard';
 import Cart from '@/components/Cart';
 import HeroSection from '@/components/HeroSection';
-import LoginModal from '@/components/LoginModal';
-import { products } from '@/data/products';
+import ProductSearch from '@/components/ProductSearch';
+import CheckoutModal from '@/components/CheckoutModal';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 interface CartItem {
   id: string;
@@ -19,25 +23,36 @@ interface CartItem {
   unit: string;
 }
 
-interface User {
-  email: string;
-  name: string;
-}
-
 const Index = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { products, loading } = useProducts();
   const { toast } = useToast();
+  
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
-  // Filter products based on selected category
+  // Filter products based on selected category and search query
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') {
-      return products;
+    let filtered = products;
+    
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
-    return products.filter(product => product.category === selectedCategory);
-  }, [selectedCategory]);
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  }, [products, selectedCategory, searchQuery]);
 
   // Get cart item quantity for a product
   const getCartQuantity = (productId: string) => {
@@ -72,7 +87,7 @@ const Index = () => {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        image: product.image_url || '/placeholder.svg',
         quantity: 1,
         unit: product.unit,
       };
@@ -122,7 +137,7 @@ const Index = () => {
   // Handle checkout
   const handleCheckout = () => {
     if (!user) {
-      setIsLoginModalOpen(true);
+      navigate('/auth');
       toast({
         title: "Login diperlukan",
         description: "Silakan login terlebih dahulu untuk melanjutkan checkout",
@@ -130,45 +145,48 @@ const Index = () => {
       return;
     }
     
-    toast({
-      title: "Checkout berhasil!",
-      description: "Pesanan Anda sedang diproses",
-    });
+    setIsCheckoutModalOpen(true);
+  };
+
+  // Handle successful order
+  const handleOrderSuccess = () => {
     setCartItems([]);
   };
 
-  // Handle login
-  const handleLogin = (email: string, password: string) => {
-    // Simulate login
-    setUser({ email, name: email.split('@')[0] });
-    setIsLoginModalOpen(false);
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut();
     toast({
-      title: "Login berhasil!",
-      description: `Selamat datang, ${email.split('@')[0]}!`,
-    });
-  };
-
-  // Handle register
-  const handleRegister = (email: string, password: string, name: string) => {
-    // Simulate registration
-    setUser({ email, name });
-    setIsLoginModalOpen(false);
-    toast({
-      title: "Registrasi berhasil!",
-      description: `Selamat datang, ${name}!`,
+      title: "Logout berhasil",
+      description: "Anda telah keluar dari akun",
     });
   };
 
   const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const getCategoryName = (categoryId: string) => {
+    const categories = {
+      'all': 'Semua Produk',
+      'sembako': 'Sembako',
+      'minuman': 'Minuman',
+      'rokok': 'Rokok',
+      'obat': 'Obat & Kesehatan',
+      'kosmetik': 'Kosmetik',
+      'sabun': 'Sabun & Deterjen',
+      'snack': 'Snack'
+    };
+    return categories[categoryId as keyof typeof categories] || 'Semua Produk';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
         cartItemsCount={totalCartItems}
         onCartClick={() => {}}
-        onLoginClick={() => setIsLoginModalOpen(true)}
+        onLoginClick={() => navigate('/auth')}
         isLoggedIn={!!user}
-        userName={user?.name}
+        userName={user?.email?.split('@')[0]}
+        onLogout={handleLogout}
       />
       
       <CategoryNav
@@ -182,33 +200,65 @@ const Index = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Products Section */}
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {selectedCategory === 'all' ? 'Semua Produk' : 
-                 selectedCategory === 'sembako' ? 'Sembako' :
-                 selectedCategory === 'minuman' ? 'Minuman' :
-                 selectedCategory === 'rokok' ? 'Rokok' :
-                 selectedCategory === 'obat' ? 'Obat & Kesehatan' :
-                 selectedCategory === 'kosmetik' ? 'Kosmetik' :
-                 selectedCategory === 'sabun' ? 'Sabun & Deterjen' :
-                 'Snack'}
-              </h2>
-              <span className="text-gray-600">
-                {filteredProducts.length} produk ditemukan
-              </span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {getCategoryName(selectedCategory)}
+                </h2>
+                <span className="text-gray-600">
+                  {filteredProducts.length} produk ditemukan
+                </span>
+              </div>
+              
+              <ProductSearch 
+                onSearch={setSearchQuery}
+                placeholder="Cari produk..."
+              />
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  cartQuantity={getCartQuantity(product.id)}
-                  onAddToCart={handleAddToCart}
-                  onUpdateQuantity={handleUpdateQuantity}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-8 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      price: Number(product.price),
+                      originalPrice: product.original_price ? Number(product.original_price) : undefined,
+                      image: product.image_url || '/placeholder.svg',
+                      category: product.category,
+                      stock: product.stock,
+                      description: product.description || '',
+                      unit: product.unit,
+                    }}
+                    cartQuantity={getCartQuantity(product.id)}
+                    onAddToCart={handleAddToCart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!loading && filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">Tidak ada produk yang ditemukan</p>
+                <p className="text-gray-400">Coba ubah filter atau kata kunci pencarian</p>
+              </div>
+            )}
           </div>
           
           {/* Cart Sidebar - Desktop */}
@@ -245,12 +295,23 @@ const Index = () => {
           </SheetContent>
         </Sheet>
       </div>
+
+      {/* Orders Link */}
+      {user && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <Link to="/orders">
+            <Button variant="outline" className="bg-white shadow-lg">
+              Riwayat Pesanan
+            </Button>
+          </Link>
+        </div>
+      )}
       
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
-        onRegister={handleRegister}
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        items={cartItems}
+        onSuccess={handleOrderSuccess}
       />
     </div>
   );

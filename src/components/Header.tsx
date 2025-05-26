@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { ShoppingCart, Search, Menu, User, X } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface HeaderProps {
   cartItemsCount: number;
@@ -11,16 +12,11 @@ interface HeaderProps {
   onLoginClick: () => void;
   isLoggedIn: boolean;
   userName?: string;
+  onLogout?: () => void;
 }
 
-const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userName }: HeaderProps) => {
+const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userName, onLogout }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Searching for:', searchQuery);
-  };
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
@@ -38,37 +34,38 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
             </div>
           </div>
 
-          {/* Search bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Input
-                type="text"
-                placeholder="Cari produk..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-12"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="absolute right-1 top-1 bg-emerald-500 hover:bg-emerald-600"
-              >
-                <Search size={16} />
-              </Button>
-            </div>
-          </form>
-
           {/* Right side buttons */}
           <div className="flex items-center space-x-4">
             {/* User account */}
-            <Button
-              variant="ghost"
-              onClick={onLoginClick}
-              className="hidden md:flex items-center space-x-2"
-            >
-              <User size={20} />
-              <span>{isLoggedIn ? userName : 'Masuk'}</span>
-            </Button>
+            {isLoggedIn && userName ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="hidden md:flex items-center space-x-2">
+                    <User size={20} />
+                    <span className="capitalize">{userName}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => window.location.href = '/orders'}>
+                    Riwayat Pesanan
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onLogout} className="text-red-600">
+                    <LogOut size={16} className="mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={onLoginClick}
+                className="hidden md:flex items-center space-x-2"
+              >
+                <User size={20} />
+                <span>Masuk</span>
+              </Button>
+            )}
 
             {/* Cart */}
             <Button
@@ -98,37 +95,38 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
           </div>
         </div>
 
-        {/* Mobile search bar */}
-        <form onSubmit={handleSearch} className="md:hidden pb-4">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Cari produk..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-12"
-            />
-            <Button
-              type="submit"
-              size="sm"
-              className="absolute right-1 top-1 bg-emerald-500 hover:bg-emerald-600"
-            >
-              <Search size={16} />
-            </Button>
-          </div>
-        </form>
-
         {/* Mobile menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t pt-4 pb-4">
-            <Button
-              variant="ghost"
-              onClick={onLoginClick}
-              className="w-full justify-start"
-            >
-              <User size={20} className="mr-2" />
-              {isLoggedIn ? userName : 'Masuk'}
-            </Button>
+            {isLoggedIn && userName ? (
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => window.location.href = '/orders'}
+                  className="w-full justify-start"
+                >
+                  <User size={20} className="mr-2" />
+                  Riwayat Pesanan
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={onLogout}
+                  className="w-full justify-start text-red-600"
+                >
+                  <LogOut size={20} className="mr-2" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={onLoginClick}
+                className="w-full justify-start"
+              >
+                <User size={20} className="mr-2" />
+                Masuk
+              </Button>
+            )}
           </div>
         )}
       </div>
