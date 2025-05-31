@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, User, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,17 @@ interface HeaderProps {
 const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userName, onLogout }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
+
+  const handleOrdersClick = () => {
+    navigate('/orders');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleAdminClick = () => {
+    navigate('/admin');
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
@@ -48,11 +60,11 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => window.location.href = '/orders'}>
+                  <DropdownMenuItem onClick={handleOrdersClick}>
                     Riwayat Pesanan
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
+                    <DropdownMenuItem onClick={handleAdminClick}>
                       Admin Panel
                     </DropdownMenuItem>
                   )}
@@ -109,7 +121,7 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
               <div className="space-y-2">
                 <Button
                   variant="ghost"
-                  onClick={() => window.location.href = '/orders'}
+                  onClick={handleOrdersClick}
                   className="w-full justify-start"
                 >
                   <User size={20} className="mr-2" />
@@ -118,7 +130,7 @@ const Header = ({ cartItemsCount, onCartClick, onLoginClick, isLoggedIn, userNam
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    onClick={() => window.location.href = '/admin'}
+                    onClick={handleAdminClick}
                     className="w-full justify-start"
                   >
                     <User size={20} className="mr-2" />

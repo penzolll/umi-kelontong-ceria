@@ -2,27 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { RegisterForm } from '@/components/auth/RegisterForm';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, signIn, signUp, signInWithGoogle, loading: authLoading } = useAuth();
-  const { toast } = useToast();
-  
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ 
-    email: '', 
-    password: '', 
-    fullName: '',
-    confirmPassword: '' 
-  });
 
   // Redirect if already logged in
   useEffect(() => {
@@ -31,155 +22,6 @@ const Auth = () => {
       navigate('/');
     }
   }, [user, authLoading, navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading) return;
-    
-    console.log('Login form submitted');
-    setLoading(true);
-    
-    try {
-      const { error } = await signIn(loginForm.email, loginForm.password);
-      
-      if (error) {
-        console.error('Login error:', error);
-        let errorMessage = 'Login gagal';
-        
-        if (error.message?.includes('Invalid login credentials')) {
-          errorMessage = 'Email atau password salah';
-        } else if (error.message?.includes('Email not confirmed')) {
-          errorMessage = 'Email belum dikonfirmasi';
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        toast({
-          title: "Login gagal",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } else {
-        console.log('Login successful');
-        toast({
-          title: "Login berhasil!",
-          description: "Selamat datang di UMI Store",
-        });
-        // Don't navigate here, let the auth state change handle it
-      }
-    } catch (error) {
-      console.error('Login exception:', error);
-      toast({
-        title: "Terjadi kesalahan",
-        description: "Silakan coba lagi",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading) return;
-    
-    if (registerForm.password !== registerForm.confirmPassword) {
-      toast({
-        title: "Password tidak cocok",
-        description: "Pastikan password dan konfirmasi password sama",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (registerForm.password.length < 6) {
-      toast({
-        title: "Password terlalu pendek",
-        description: "Password minimal 6 karakter",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    console.log('Register form submitted');
-    setLoading(true);
-    
-    try {
-      const { error } = await signUp(
-        registerForm.email, 
-        registerForm.password, 
-        registerForm.fullName
-      );
-      
-      if (error) {
-        console.error('Register error:', error);
-        let errorMessage = 'Registrasi gagal';
-        
-        if (error.message?.includes('already registered')) {
-          errorMessage = 'Email sudah terdaftar';
-        } else if (error.message?.includes('Password should be at least')) {
-          errorMessage = 'Password minimal 6 karakter';
-        } else if (error.message?.includes('Invalid email')) {
-          errorMessage = 'Format email tidak valid';
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        toast({
-          title: "Registrasi gagal",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } else {
-        console.log('Registration successful');
-        toast({
-          title: "Registrasi berhasil!",
-          description: "Akun Anda telah dibuat. Selamat datang di UMI Store!",
-        });
-        // Don't navigate here, let the auth state change handle it
-      }
-    } catch (error) {
-      console.error('Register exception:', error);
-      toast({
-        title: "Terjadi kesalahan",
-        description: "Silakan coba lagi",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    if (loading) return;
-    
-    console.log('Google sign in initiated');
-    setLoading(true);
-    
-    try {
-      const { error } = await signInWithGoogle();
-      
-      if (error) {
-        console.error('Google sign in error:', error);
-        toast({
-          title: "Login Google gagal",
-          description: error.message || "Terjadi kesalahan",
-          variant: "destructive",
-        });
-        setLoading(false);
-      }
-      // Don't set loading to false here for successful attempts
-      // The page redirect will handle the loading state
-    } catch (error) {
-      console.error('Google sign in exception:', error);
-      toast({
-        title: "Terjadi kesalahan",
-        description: "Silakan coba lagi",
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
 
   // Show loading while checking auth state
   if (authLoading) {
@@ -225,131 +67,11 @@ const Auth = () => {
               </TabsList>
               
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="nama@email.com"
-                        className="pl-10"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10"
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button
-                    type="submit"
-                    className="w-full bg-emerald-500 hover:bg-emerald-600"
-                    disabled={loading}
-                  >
-                    {loading ? 'Memproses...' : 'Masuk'}
-                  </Button>
-                </form>
+                <LoginForm loading={loading} setLoading={setLoading} />
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Nama Lengkap</Label>
-                    <div className="relative">
-                      <User size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="fullName"
-                        type="text"
-                        placeholder="Nama Lengkap"
-                        className="pl-10"
-                        value={registerForm.fullName}
-                        onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="registerEmail">Email</Label>
-                    <div className="relative">
-                      <Mail size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="registerEmail"
-                        type="email"
-                        placeholder="nama@email.com"
-                        className="pl-10"
-                        value={registerForm.email}
-                        onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="registerPassword">Password</Label>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="registerPassword"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10"
-                        value={registerForm.password}
-                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        required
-                        minLength={6}
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-3 text-gray-400" />
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10"
-                        value={registerForm.confirmPassword}
-                        onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                        required
-                        minLength={6}
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button
-                    type="submit"
-                    className="w-full bg-emerald-500 hover:bg-emerald-600"
-                    disabled={loading}
-                  >
-                    {loading ? 'Memproses...' : 'Daftar'}
-                  </Button>
-                </form>
+                <RegisterForm loading={loading} setLoading={setLoading} />
               </TabsContent>
             </Tabs>
             
@@ -363,25 +85,7 @@ const Auth = () => {
                 </div>
               </div>
               
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full mt-4"
-                onClick={handleGoogleSignIn}
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
-                ) : (
-                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                )}
-                {loading ? 'Memproses...' : 'Masuk dengan Google'}
-              </Button>
+              <GoogleSignInButton loading={loading} setLoading={setLoading} />
             </div>
           </CardContent>
         </Card>

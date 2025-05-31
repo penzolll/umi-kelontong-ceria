@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,12 @@ import AdminStats from '@/components/admin/AdminStats';
 const Admin = () => {
   const { user, signOut } = useAuth();
   const { isAdmin, loading } = useAdmin();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   if (loading) {
     return (
@@ -42,7 +48,7 @@ const Admin = () => {
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
-            <Button variant="outline" onClick={signOut}>
+            <Button variant="outline" onClick={handleLogout}>
               Logout
             </Button>
           </div>
