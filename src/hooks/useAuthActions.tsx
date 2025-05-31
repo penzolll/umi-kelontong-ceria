@@ -7,16 +7,6 @@ export const useAuthActions = () => {
     console.log('Attempting sign in for:', email);
     
     try {
-      // Clean up existing state first
-      cleanupAuthState();
-      
-      // Attempt global sign out first
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        console.log('Global signout failed (continuing anyway):', err);
-      }
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -29,7 +19,6 @@ export const useAuthActions = () => {
         return { error };
       }
       
-      // Let the auth state change handler handle the redirect
       return { error: null };
     } catch (err) {
       console.error('Sign in exception:', err);
@@ -41,16 +30,6 @@ export const useAuthActions = () => {
     console.log('Attempting sign up for:', email);
     
     try {
-      // Clean up existing state first
-      cleanupAuthState();
-      
-      // Attempt global sign out first
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        console.log('Global signout failed (continuing anyway):', err);
-      }
-      
       const redirectUrl = `${window.location.origin}/`;
       console.log('Using redirect URL:', redirectUrl);
       
@@ -72,13 +51,6 @@ export const useAuthActions = () => {
         return { error };
       }
       
-      // For email confirmation disabled, user should be signed in immediately
-      if (data?.user && data?.session) {
-        console.log('User signed up and logged in immediately');
-        // Let the auth state change handler handle the redirect
-        return { error: null };
-      }
-      
       return { error: null };
     } catch (err) {
       console.error('Sign up exception:', err);
@@ -90,14 +62,12 @@ export const useAuthActions = () => {
     console.log('Attempting sign out');
     
     try {
-      // Clean up auth state first
       cleanupAuthState();
       
-      // Attempt global sign out
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        console.log('Global signout failed (continuing anyway):', err);
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
       }
       
       // Force page reload for clean state
@@ -113,16 +83,6 @@ export const useAuthActions = () => {
     console.log('Attempting Google sign in');
     
     try {
-      // Clean up existing state first
-      cleanupAuthState();
-      
-      // Attempt global sign out first
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        console.log('Global signout failed (continuing anyway):', err);
-      }
-      
       const redirectUrl = `${window.location.origin}/`;
       console.log('Using Google redirect URL:', redirectUrl);
       

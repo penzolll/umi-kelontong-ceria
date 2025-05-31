@@ -44,6 +44,7 @@ export const LoginForm = ({ loading, setLoading }: LoginFormProps) => {
           description: errorMessage,
           variant: "destructive",
         });
+        setLoading(false);
       } else {
         console.log('Login successful');
         toast({
@@ -58,7 +59,6 @@ export const LoginForm = ({ loading, setLoading }: LoginFormProps) => {
         description: "Silakan coba lagi",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };

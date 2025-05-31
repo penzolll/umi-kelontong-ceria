@@ -73,6 +73,7 @@ export const RegisterForm = ({ loading, setLoading }: RegisterFormProps) => {
           description: errorMessage,
           variant: "destructive",
         });
+        setLoading(false);
       } else {
         console.log('Registration successful');
         toast({
@@ -87,7 +88,6 @@ export const RegisterForm = ({ loading, setLoading }: RegisterFormProps) => {
         description: "Silakan coba lagi",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };

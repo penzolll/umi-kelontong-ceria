@@ -16,18 +16,14 @@ export const useAuthState = () => {
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
-        // Only synchronous state updates here
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle successful sign in with redirect
+        // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('User signed in successfully, redirecting...');
-          // Defer redirect to prevent deadlocks
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 100);
+          window.location.href = '/';
         }
       }
     );
